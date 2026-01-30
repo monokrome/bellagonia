@@ -1,6 +1,6 @@
 {
   "name": "bellagonia",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Scoped style injection for Gonia directives via Vite plugin",
   "type": "module",
   "packageManager": "pnpm@10.28.0",
