@@ -1,0 +1,41 @@
+{
+  "name": "bellagonia",
+  "version": "0.1.0",
+  "description": "Scoped style injection for Gonia directives via Vite plugin",
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "license": "BSD-2-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/monokrome/bellagonia"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "format": "prettier --write 'src/**/*.ts' 'tests/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts' 'tests/**/*.ts'",
+    "duplication": "jscpd src/"
+  },
+  "peerDependencies": {
+    "gonia": ">=0.3.0",
+    "vite": ">=5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "gonia": "^0.3.0",
+    "jscpd": "^4.0.7",
+    "prettier": "^3.8.1",
+    "typescript": "^5.7.0",
+    "vite": "^6.4.0",
+    "vitest": "^4.0.17"
+  }
+}
