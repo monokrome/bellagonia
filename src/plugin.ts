@@ -44,6 +44,30 @@ export function bellagonia(options: BellagoniaOptions = {}): Plugin {
     name: "bellagonia",
     enforce: "pre",
 
+    async config(config) {
+      const plugins = (config.plugins ?? []).flat().filter(Boolean);
+      const hasVanillaExtract = plugins.some(
+        (p) => (p as Plugin).name === "vanilla-extract",
+      );
+
+      if (hasVanillaExtract) {
+        return;
+      }
+
+      try {
+        const ve = await import("@vanilla-extract/vite-plugin");
+        const vePlugin = ve.vanillaExtractPlugin({
+          unstable_mode: "transform",
+        });
+
+        return {
+          plugins: [vePlugin],
+        };
+      } catch {
+        // @vanilla-extract/vite-plugin not installed — no injection needed
+      }
+    },
+
     buildStart() {
       clearCollectedStyles();
     },
