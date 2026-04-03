@@ -55,14 +55,19 @@ export function bellagonia(options: BellagoniaOptions = {}): Plugin {
       }
 
       try {
-        const ve = await import("@vanilla-extract/vite-plugin");
-        const vePlugin = ve.vanillaExtractPlugin({
-          unstable_mode: "transform",
-        });
+        const id = "@vanilla-extract/vite-plugin";
+        const ve = (await import(/* @vite-ignore */ id)) as Record<
+          string,
+          unknown
+        >;
+        const factory = ve.vanillaExtractPlugin as (
+          opts: Record<string, unknown>,
+        ) => Plugin;
+        const vePlugin = factory({ unstable_mode: "transform" });
 
         return {
           plugins: [vePlugin],
-        };
+        } as Record<string, unknown>;
       } catch {
         // @vanilla-extract/vite-plugin not installed — no injection needed
       }
