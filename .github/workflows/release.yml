@@ -15,8 +15,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm run format:check
       - run: pnpm test
       - run: pnpm run build
+      - run: pnpm run duplication
       - run: pnpm audit --prod --ignore-unfixable
 
   publish:

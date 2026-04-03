@@ -1,7 +1,10 @@
+import { createRequire } from "node:module";
 import type { Plugin } from "vite";
 import { findSiblingCss } from "./css.js";
 import { hasDirectiveCall, transformDirective } from "./transform.js";
 import { registerStyle, clearCollectedStyles } from "./registry.js";
+
+const require = createRequire(import.meta.url);
 
 export interface BellagoniaOptions {
   directiveSources?: string[];
@@ -36,42 +39,31 @@ function matchesPattern(filePath: string, pattern: string): boolean {
   return globToRegex(pattern).test(normalized);
 }
 
-export function bellagonia(options: BellagoniaOptions = {}): Plugin {
+function tryLoadVanillaExtract(): Plugin[] {
+  try {
+    /* eslint-disable @typescript-eslint/no-require-imports */
+    const ve = require("@vanilla-extract/vite-plugin") as Record<
+      string,
+      unknown
+    >;
+    const factory = ve.vanillaExtractPlugin as (
+      opts: Record<string, unknown>,
+    ) => unknown;
+    const result = factory({ unstable_mode: "transform" });
+    return Array.isArray(result) ? result : [result as Plugin];
+  } catch (e: unknown) {
+    if ((e as { code?: string }).code !== "MODULE_NOT_FOUND") throw e;
+    return [];
+  }
+}
+
+export function bellagonia(options: BellagoniaOptions = {}): Plugin | Plugin[] {
   const { directiveSources = ["src/directives/**/*.ts"], autoStyles = true } =
     options;
 
-  return {
+  const bellagoniaPlugin: Plugin = {
     name: "bellagonia",
     enforce: "pre",
-
-    async config(config) {
-      const plugins = (config.plugins ?? []).flat().filter(Boolean);
-      const hasVanillaExtract = plugins.some(
-        (p) => (p as Plugin).name === "vanilla-extract",
-      );
-
-      if (hasVanillaExtract) {
-        return;
-      }
-
-      try {
-        const id = "@vanilla-extract/vite-plugin";
-        const ve = (await import(/* @vite-ignore */ id)) as Record<
-          string,
-          unknown
-        >;
-        const factory = ve.vanillaExtractPlugin as (
-          opts: Record<string, unknown>,
-        ) => Plugin;
-        const vePlugin = factory({ unstable_mode: "transform" });
-
-        return {
-          plugins: [vePlugin],
-        } as Record<string, unknown>;
-      } catch {
-        // @vanilla-extract/vite-plugin not installed — no injection needed
-      }
-    },
 
     buildStart() {
       clearCollectedStyles();
@@ -119,4 +111,12 @@ export function bellagonia(options: BellagoniaOptions = {}): Plugin {
       return null;
     },
   };
+
+  const vePlugins = tryLoadVanillaExtract();
+
+  if (vePlugins.length > 0) {
+    return [...vePlugins, bellagoniaPlugin];
+  }
+
+  return bellagoniaPlugin;
 }

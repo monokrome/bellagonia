@@ -11,6 +11,15 @@ import { getCollectedStyles, clearCollectedStyles } from "../src/registry.js";
 
 const mockExists = vi.mocked(existsSync);
 
+function getBellagoniaPlugin(result: Plugin | Plugin[]): Plugin {
+  if (Array.isArray(result)) {
+    const found = result.find((p) => p.name === "bellagonia");
+    if (!found) throw new Error("bellagonia plugin not found in array");
+    return found;
+  }
+  return result;
+}
+
 function getTransform(plugin: Plugin) {
   if (typeof plugin.transform === "function") {
     return plugin.transform;
@@ -39,12 +48,12 @@ beforeEach(() => {
 
 describe("bellagonia plugin", () => {
   it("has the correct name", () => {
-    const plugin = bellagonia();
+    const plugin = getBellagoniaPlugin(bellagonia());
     expect(plugin.name).toBe("bellagonia");
   });
 
   it("skips non-JS files", () => {
-    const plugin = bellagonia();
+    const plugin = getBellagoniaPlugin(bellagonia());
     const result = callTransform(
       plugin,
       "directive('x', fn)",
@@ -54,7 +63,7 @@ describe("bellagonia plugin", () => {
   });
 
   it("skips node_modules", () => {
-    const plugin = bellagonia();
+    const plugin = getBellagoniaPlugin(bellagonia());
     const result = callTransform(
       plugin,
       "directive('x', fn)",
@@ -64,7 +73,7 @@ describe("bellagonia plugin", () => {
   });
 
   it("skips files without directive() calls", () => {
-    const plugin = bellagonia();
+    const plugin = getBellagoniaPlugin(bellagonia());
     const result = callTransform(
       plugin,
       "const x = 1",
@@ -74,7 +83,9 @@ describe("bellagonia plugin", () => {
   });
 
   it("skips files not matching directiveSources patterns", () => {
-    const plugin = bellagonia({ directiveSources: ["src/directives/**/*.ts"] });
+    const plugin = getBellagoniaPlugin(
+      bellagonia({ directiveSources: ["src/directives/**/*.ts"] }),
+    );
     const result = callTransform(
       plugin,
       "directive('x', fn)",
@@ -85,7 +96,7 @@ describe("bellagonia plugin", () => {
 
   it("skips when no sibling CSS found", () => {
     mockExists.mockReturnValue(false);
-    const plugin = bellagonia();
+    const plugin = getBellagoniaPlugin(bellagonia());
     const result = callTransform(
       plugin,
       "directive('x', fn)",
@@ -97,7 +108,7 @@ describe("bellagonia plugin", () => {
   it("transforms matching directive files", () => {
     mockExists.mockImplementation((p) => String(p).endsWith("x.module.css"));
 
-    const plugin = bellagonia();
+    const plugin = getBellagoniaPlugin(bellagonia());
     const code = [
       "import { directive } from 'gonia'",
       "directive('x', fn)",
@@ -113,7 +124,7 @@ describe("bellagonia plugin", () => {
   });
 
   it("respects autoStyles: false", () => {
-    const plugin = bellagonia({ autoStyles: false });
+    const plugin = getBellagoniaPlugin(bellagonia({ autoStyles: false }));
     const result = callTransform(
       plugin,
       "directive('x', fn)",
@@ -127,7 +138,9 @@ describe("bellagonia plugin", () => {
       String(p).endsWith("widget.module.css"),
     );
 
-    const plugin = bellagonia({ directiveSources: ["lib/components/**/*.ts"] });
+    const plugin = getBellagoniaPlugin(
+      bellagonia({ directiveSources: ["lib/components/**/*.ts"] }),
+    );
     const code = [
       "import { directive } from 'gonia'",
       "directive('widget', fn)",
@@ -142,7 +155,7 @@ describe("bellagonia plugin", () => {
   it("registers CSS path when transforming a directive", () => {
     mockExists.mockImplementation((p) => String(p).endsWith("x.module.css"));
 
-    const plugin = bellagonia();
+    const plugin = getBellagoniaPlugin(bellagonia());
     const code = [
       "import { directive } from 'gonia'",
       "directive('x', fn)",
@@ -158,7 +171,7 @@ describe("bellagonia plugin", () => {
   it("does not collect when autoStyles is false", () => {
     mockExists.mockImplementation((p) => String(p).endsWith("x.module.css"));
 
-    const plugin = bellagonia({ autoStyles: false });
+    const plugin = getBellagoniaPlugin(bellagonia({ autoStyles: false }));
     const code = [
       "import { directive } from 'gonia'",
       "directive('x', fn)",
