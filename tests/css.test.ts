@@ -23,7 +23,7 @@ describe("findSiblingCss", () => {
     const result = findSiblingCss("/app/src/directives/counter.ts");
     expect(result).toEqual({
       path: join("/app/src/directives", "counter.css.ts"),
-      importPath: "./counter.css",
+      importPath: "./counter.css.ts",
     });
   });
 
@@ -35,7 +35,7 @@ describe("findSiblingCss", () => {
     const result = findSiblingCss("/app/src/directives/counter.ts");
     expect(result).toEqual({
       path: join("/app/src/directives", "counter.css.js"),
-      importPath: "./counter.css",
+      importPath: "./counter.css.js",
     });
   });
 
@@ -85,7 +85,7 @@ describe("findSiblingCss", () => {
     });
 
     const result = findSiblingCss("/app/src/directives/counter.ts");
-    expect(result?.importPath).toBe("./counter.css");
+    expect(result?.importPath).toBe("./counter.css.ts");
     expect(result?.path).toBe(join("/app/src/directives", "counter.css.ts"));
   });
 
@@ -96,13 +96,13 @@ describe("findSiblingCss", () => {
     expect(result).toBeNull();
   });
 
-  it("strips .ts extension from vanilla-extract import paths", () => {
+  it("preserves full extension for vanilla-extract import paths", () => {
     mockExists.mockImplementation(
       (p) => String(p) === join("/app/src/directives", "theme.css.ts"),
     );
 
     const result = findSiblingCss("/app/src/directives/theme.ts");
-    expect(result?.importPath).toBe("./theme.css");
+    expect(result?.importPath).toBe("./theme.css.ts");
   });
 
   it("handles .tsx source files", () => {

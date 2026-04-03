@@ -22,13 +22,7 @@ export function findSiblingCss(filePath: string): SiblingCss | null {
     const cssPath = join(dir, base + ext);
 
     if (existsSync(cssPath)) {
-      let importPath = "./" + base + ext;
-
-      if (ext === ".css.ts" || ext === ".css.js") {
-        importPath = "./" + base + ".css";
-      }
-
-      return { path: cssPath, importPath };
+      return { path: cssPath, importPath: "./" + base + ext };
     }
   }
 
